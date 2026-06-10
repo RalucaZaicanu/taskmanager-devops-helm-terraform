@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  repository: ralucazaicanu/task-manager
+  tag: latest
+
+containerPort: 8080
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: task-manager.local

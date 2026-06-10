@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>DevOps Task Manager</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+
+<div class="page">
+
+    <header>
+        <h1>DevOps Task Manager</h1>
+        <p>A Java Spring Boot web app for a CI/CD pipeline with GitHub, Jenkins, Docker and Kubernetes.</p>
+    </header>
+
+    <section class="stats">
+        <div class="card">
+            <h2 th:text="${totalCount}">0</h2>
+            <p>Total Tasks</p>
+        </div>
+
+        <div class="card">
+            <h2 th:text="${activeCount}">0</h2>
+            <p>Active Tasks</p>
+        </div>
+
+        <div class="card">
+            <h2 th:text="${completedCount}">0</h2>
+            <p>Completed Tasks</p>
+        </div>
+    </section>
+
+    <section class="form-section">
+        <h2>Add New Task</h2>
+
+        <form action="/tasks" method="post">
+            <input type="text" name="title" placeholder="Task title" required>
+
+            <input type="text" name="description" placeholder="Task description" required>
+
+            <select name="priority">
+                <option value="Low">Low Priority</option>
+                <option value="Medium">Medium Priority</option>
+                <option value="High">High Priority</option>
+            </select>
+
+            <button type="submit">Add Task</button>
+        </form>
+    </section>
+
+    <section class="filters">
+        <a href="/" th:classappend="${filter == 'all'} ? 'active-filter'">All</a>
+        <a href="/?filter=active" th:classappend="${filter == 'active'} ? 'active-filter'">Active</a>
+        <a href="/?filter=completed" th:classappend="${filter == 'completed'} ? 'active-filter'">Completed</a>
+    </section>
+
+    <section class="task-list">
+        <div class="task-card" th:each="task : ${tasks}" th:classappend="${task.completed} ? 'completed-task'">
+
+            <div class="task-info">
+                <h3 th:text="${task.title}">Task title</h3>
+                <p th:text="${task.description}">Task description</p>
+
+                <span class="priority" th:text="${task.priority}">Priority</span>
+                <span class="status" th:text="${task.completed} ? 'Completed' : 'Active'">Status</span>
+            </div>
+
+            <div class="task-actions">
+                <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post">
+                    <button type="submit" class="complete-btn">
+                        Change Status
+                    </button>
+                </form>
+
+                <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post">
+                    <button type="submit" class="delete-btn">
+                        Delete
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: task-manager
+description: Helm chart for deploying a Spring Boot Task Manager application to Kubernetes
+type: application
+
+version: 0.1.0
+appVersion: "1.0.0"
