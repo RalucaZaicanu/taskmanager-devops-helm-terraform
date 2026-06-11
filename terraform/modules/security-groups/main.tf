@@ -57,6 +57,15 @@ resource "aws_security_group_rule" "k8s_ssh" {
   cidr_blocks       = [var.allowed_ssh_cidr]
   security_group_id = aws_security_group.k8s.id
 }
+resource "aws_security_group_rule" "k8s_ssh_from_jenkins" {
+  type                     = "ingress"
+  description              = "Allow Jenkins to SSH into Kubernetes control-plane"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.jenkins.id
+  security_group_id        = aws_security_group.k8s.id
+}
 
 resource "aws_security_group_rule" "k8s_http" {
   type              = "ingress"
