@@ -16,6 +16,7 @@ pipeline {
         HELM_CHART = "helm/task-manager"
         RELEASE_NAME = "task-manager"
         KUBE_NAMESPACE = "task-manager"
+        K8S_PRIVATE_IP = "10.0.1.207"
 
         KUBECONFIG = "${WORKSPACE}/kubeconfig.yaml"
     }
@@ -110,48 +111,43 @@ pipeline {
         // }
 
         stage('Get Kubernetes Kubeconfig') {
-            steps {
-                script {
-                    env.K8S_PUBLIC_IP = "63.186.37.175"
-                       
+    steps {
+        withCredentials([
+            sshUserPrivateKey(
+                credentialsId: 'aws-ssh-key',
+                keyFileVariable: 'SSH_KEY',
+                usernameVariable: 'SSH_USER'
+            )
+        ]) {
+            sh '''
+                echo "Waiting for Kubernetes kubeconfig..."
 
-                    env.K8S_PRIVATE_IP = "10.0.1.207"
-                }
+                for i in $(seq 1 10); do
+                    ssh -i "$SSH_KEY" \
+                        -o StrictHostKeyChecking=no \
+                        -o ConnectTimeout=10 \
+                        "$SSH_USER@$K8S_PRIVATE_IP" \
+                        "sudo test -f /etc/rancher/k3s/k3s.yaml" && break
 
-                withCredentials([
-                    sshUserPrivateKey(
-                        credentialsId: 'KeysshAWS',
-                        keyFileVariable: 'SSH_KEY',
-                        usernameVariable: 'SSH_USER'
-                    )
-                ]) {
-                    sh '''
-                        echo "Waiting for Kubernetes kubeconfig..."
+                    echo "Kubernetes is not ready yet. Waiting..."
+                    sleep 10
+                done
 
-                        for i in $(seq 1 30); do
-                            ssh -i "$SSH_KEY" \
-                                -o StrictHostKeyChecking=no \
-                                "$SSH_USER@$K8S_PUBLIC_IP" \
-                                "sudo test -f /etc/rancher/k3s/k3s.yaml" && break
+                ssh -i "$SSH_KEY" \
+                    -o StrictHostKeyChecking=no \
+                    -o ConnectTimeout=10 \
+                    "$SSH_USER@$K8S_PRIVATE_IP" \
+                    "sudo cat /etc/rancher/k3s/k3s.yaml" > "$KUBECONFIG"
 
-                            echo "Kubernetes is not ready yet. Waiting..."
-                            sleep 10
-                        done
+                sed -i "s/127.0.0.1/$K8S_PRIVATE_IP/g" "$KUBECONFIG"
 
-                        ssh -i "$SSH_KEY" \
-                            -o StrictHostKeyChecking=no \
-                            "$SSH_USER@$K8S_PUBLIC_IP" \
-                            "sudo cat /etc/rancher/k3s/k3s.yaml" > "$KUBECONFIG"
+                chmod 600 "$KUBECONFIG"
 
-                        sed -i "s/127.0.0.1/$K8S_PRIVATE_IP/g" "$KUBECONFIG"
-
-                        chmod 600 "$KUBECONFIG"
-
-                        kubectl get nodes
-                    '''
-                }
-            }
+                kubectl get nodes
+            '''
         }
+    }
+}
 
         stage('Maven Test and Package') {
             steps {
