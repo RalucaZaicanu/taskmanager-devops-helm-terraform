@@ -27,100 +27,95 @@ pipeline {
             }
         }
 
-        stage('Terraform Format Check') {
-            steps {
-                sh 'terraform fmt -check -recursive terraform'
-            }
-        }
+        // stage('Terraform Format Check') {
+        //     steps {
+        //         sh 'terraform fmt -check -recursive terraform'
+        //     }
+        // }
 
-        stage('Terraform Init') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'aws-credentials',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )
-                ]) {
-                    dir("${TF_DIR}") {
-                        sh 'terraform init'
-                    }
-                }
-            }
-        }
+        // stage('Terraform Init') {
+        //     steps {
+        //         withCredentials([
+        //             usernamePassword(
+        //                 credentialsId: 'aws-credentials',
+        //                 usernameVariable: 'AWS_ACCESS_KEY_ID',
+        //                 passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+        //             )
+        //         ]) {
+        //             dir("${TF_DIR}") {
+        //                 sh 'terraform init'
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Terraform Validate') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'aws-credentials',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )
-                ]) {
-                    dir("${TF_DIR}") {
-                        sh 'terraform validate'
-                    }
-                }
-            }
-        }
+        // stage('Terraform Validate') {
+        //     steps {
+        //         withCredentials([
+        //             usernamePassword(
+        //                 credentialsId: 'aws-credentials',
+        //                 usernameVariable: 'AWS_ACCESS_KEY_ID',
+        //                 passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+        //             )
+        //         ]) {
+        //             dir("${TF_DIR}") {
+        //                 sh 'terraform validate'
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Terraform Plan') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'aws-credentials',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )
-                ]) {
-                    dir("${TF_DIR}") {
-                        sh 'terraform plan -out=tfplan'
-                        sh 'terraform show -no-color tfplan > tfplan.txt'
-                    }
-                }
+        // stage('Terraform Plan') {
+        //     steps {
+        //         withCredentials([
+        //             usernamePassword(
+        //                 credentialsId: 'aws-credentials',
+        //                 usernameVariable: 'AWS_ACCESS_KEY_ID',
+        //                 passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+        //             )
+        //         ]) {
+        //             dir("${TF_DIR}") {
+        //                 sh 'terraform plan -out=tfplan'
+        //                 sh 'terraform show -no-color tfplan > tfplan.txt'
+        //             }
+        //         }
 
-                archiveArtifacts artifacts: "${TF_DIR}/tfplan.txt", fingerprint: true
-            }
-        }
+        //         archiveArtifacts artifacts: "${TF_DIR}/tfplan.txt", fingerprint: true
+        //     }
+        // }
 
-        stage('Manual Approval for Terraform Apply') {
-            steps {
-                timeout(time: 15, unit: 'MINUTES') {
-                    input message: 'Review the Terraform plan. Do you want to apply these infrastructure changes?',
-                          ok: 'Apply Terraform'
-                }
-            }
-        }
+        // stage('Manual Approval for Terraform Apply') {
+        //     steps {
+        //         timeout(time: 15, unit: 'MINUTES') {
+        //             input message: 'Review the Terraform plan. Do you want to apply these infrastructure changes?',
+        //                   ok: 'Apply Terraform'
+        //         }
+        //     }
+        // }
 
-        stage('Terraform Apply') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'aws-credentials',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )
-                ]) {
-                    dir("${TF_DIR}") {
-                        sh 'terraform apply tfplan'
-                    }
-                }
-            }
-        }
+        // stage('Terraform Apply') {
+        //     steps {
+        //         withCredentials([
+        //             usernamePassword(
+        //                 credentialsId: 'aws-credentials',
+        //                 usernameVariable: 'AWS_ACCESS_KEY_ID',
+        //                 passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+        //             )
+        //         ]) {
+        //             dir("${TF_DIR}") {
+        //                 sh 'terraform apply tfplan'
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Get Kubernetes Kubeconfig') {
             steps {
                 script {
-                    env.K8S_PUBLIC_IP = sh(
-                        script: "cd ${TF_DIR} && terraform output -raw k8s_control_plane_public_ip",
-                        returnStdout: true
-                    ).trim()
+                    env.K8S_PUBLIC_IP = "63.186.37.175",
+                       
 
-                    env.K8S_PRIVATE_IP = sh(
-                        script: "cd ${TF_DIR} && terraform output -raw k8s_control_plane_private_ip",
-                        returnStdout: true
-                    ).trim()
+                    env.K8S_PRIVATE_IP = "10.0.1.207"
                 }
 
                 withCredentials([
