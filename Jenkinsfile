@@ -16,7 +16,7 @@ pipeline {
         HELM_CHART = "helm/task-manager"
         RELEASE_NAME = "task-manager"
         KUBE_NAMESPACE = "task-manager"
-        K8S_PRIVATE_IP = "10.0.1.207"
+        K8S_PRIVATE_IP = "10.0.1.80"
 
         KUBECONFIG = "${WORKSPACE}/kubeconfig.yaml"
     }
