@@ -120,7 +120,7 @@ pipeline {
 
                 withCredentials([
                     sshUserPrivateKey(
-                        credentialsId: 'aws-ssh-key',
+                        credentialsId: 'KeysshAWS',
                         keyFileVariable: 'SSH_KEY',
                         usernameVariable: 'SSH_USER'
                     )
