@@ -112,7 +112,7 @@ pipeline {
         stage('Get Kubernetes Kubeconfig') {
             steps {
                 script {
-                    env.K8S_PUBLIC_IP = "63.186.37.175",
+                    env.K8S_PUBLIC_IP = "63.186.37.175"
                        
 
                     env.K8S_PRIVATE_IP = "10.0.1.207"
